@@ -84,8 +84,10 @@ class MessageUtils {
   static String getChannelName(int channelId) {
     switch (channelId) {
       case 1:
-      case 1557:
         return 'WhatsApp';
+      case 1557:
+      case 1561:
+        return 'WhatsApp Business';
       case 2:
         return 'Telegram';
       case 3:

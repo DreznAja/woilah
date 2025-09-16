@@ -53,6 +53,7 @@ class AppConfig {
   // Channel IDs
   static const Map<String, int> channelIds = {
     'whatsapp': 1,
+    'whatsappBusiness': 1561, // WhatsApp Business API channel ID
     'telegram': 2,
     'instagram': 3,
     'messenger': 4,
@@ -65,7 +66,6 @@ class AppConfig {
     'tokopedia': 1505,
     'olx': 1532,
     'blibliseller': 1556,
-    'whatsappBusiness': 1557,
     'tokopediaSeller': 1562,
     'noboxchat': 1569,
   };

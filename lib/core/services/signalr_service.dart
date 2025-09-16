@@ -236,7 +236,11 @@ class SignalRService {
       // Ensure Room data is properly formatted
       if (cleaned['Room'] is Map<String, dynamic>) {
         final room = Map<String, dynamic>.from(cleaned['Room']);
+        // Ensure proper data types
+        room['IdLink'] = room['IdLink']?.toString();
+        room['IdGroup'] = room['IdGroup']?.toString();
         room['IdAccount'] = int.tryParse(room['IdAccount']?.toString() ?? '1') ?? 1;
+        room['IdRoom'] = room['IdRoom']?.toString();
         cleaned['Room'] = room;
       }
       
@@ -247,6 +251,9 @@ class SignalRService {
         msg['Msg'] = msg['Msg']?.toString() ?? '';
         msg['File'] = msg['File']?.toString() ?? '';
         msg['Files'] = msg['Files']?.toString() ?? '';
+        if (msg['ReplyId'] != null) {
+          msg['ReplyId'] = msg['ReplyId'].toString();
+        }
         cleaned['Msg'] = msg;
       }
       
@@ -256,10 +263,10 @@ class SignalRService {
     // Convert flat structure to Room + Msg structure
     return {
       'Room': {
-        'IdLink': data['IdLink']?.toString(),
-        'IdGroup': data['IdGroup']?.toString(),
+        'IdLink': data['IdLink']?.toString() ?? data['LinkId']?.toString(),
+        'IdGroup': data['IdGroup']?.toString() ?? data['GroupId']?.toString(),
         'IdAccount': int.tryParse(data['IdAccount']?.toString() ?? '1') ?? 1,
-        'IdRoom': data['IdRoom']?.toString(),
+        'IdRoom': data['IdRoom']?.toString() ?? data['RoomId']?.toString(),
       },
       'Msg': {
         'Type': data['Type']?.toString() ?? '1',

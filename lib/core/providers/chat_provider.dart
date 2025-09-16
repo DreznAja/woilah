@@ -234,8 +234,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
   if (activeRoom == null) return;
 
   try {
-    // Get the agent account ID
-    final accountId = await _getAgentAccountId(activeRoom.channelId);
+    // Get the agent account ID using the correct channel mapping
+    final effectiveChannelId = _getEffectiveChannelId(activeRoom.channelId);
+    final accountId = await _getAgentAccountId(effectiveChannelId);
     if (accountId == null) {
       state = state.copyWith(error: 'Unable to determine agent account ID');
       return;
@@ -244,16 +245,15 @@ class ChatNotifier extends StateNotifier<ChatState> {
     // Get the proper LinkId from the room
     final linkId = activeRoom.ctId ?? activeRoom.id;
     
-    // FIX: Use WhatsApp Business channel ID (1561) instead of room's channelId
-    // Room shows channelId: 1 but we need to send with channelId: 1561
-    final channelId = 1561; // WhatsApp Business with mobile number
+    // Use the effective channel ID for sending
+    final channelId = effectiveChannelId;
     
-    print('Room channelId: ${activeRoom.channelId}, Using channelId: $channelId');
+    print('Room channelId: ${activeRoom.channelId}, Effective channelId: $channelId');
     
     // Format data for Inbox API
     final apiMessageData = {
       'LinkId': int.tryParse(linkId),
-      'ChannelId': channelId, // Use WhatsApp Business channel ID (1561)
+      'ChannelId': channelId,
       'AccountIds': accountId,
       'BodyType': 1,
       'Body': text,
@@ -333,8 +333,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (activeRoom == null) return;
 
     try {
-      // Get the agent account ID (the account that will send the message)
-      final accountId = await _getAgentAccountId(activeRoom.channelId);
+      // Get the agent account ID using the correct channel mapping
+      final effectiveChannelId = _getEffectiveChannelId(activeRoom.channelId);
+      final accountId = await _getAgentAccountId(effectiveChannelId);
       if (accountId == null) {
         state = state.copyWith(error: 'Unable to determine agent account ID');
         return;
@@ -343,8 +344,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
       // Get the proper LinkId and AccountId from the room
       final linkId = activeRoom.ctId ?? activeRoom.id;
       
-      // Use the working channel ID from your Postman test
-      final workingChannelId = 1; // Use WhatsApp channel ID
+      // Use the effective channel ID for sending
+      final workingChannelId = effectiveChannelId;
       
       // Format data for Inbox API
       final apiMessageData = {
@@ -395,8 +396,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
   
   Future<String?> _getAgentAccountId(int channelId) async {
-  // FIX: Use WhatsApp Business channel ID (1561) to get the correct account
-  final effectiveChannelId = 1561; // Always use WhatsApp Business channel
+  // Use the actual channel ID from the room to get the correct account
+  final effectiveChannelId = channelId;
   
   // First try to get from stored user data
   final userData = StorageService.getUserData();
@@ -534,6 +535,47 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  // Helper method to map display channel IDs to actual sending channel IDs
+  int _getEffectiveChannelId(int displayChannelId) {
+    // Map display channel IDs to actual API channel IDs based on backend requirements
+    switch (displayChannelId) {
+      case 1: // WhatsApp display -> WhatsApp Business API
+        return 1561;
+      case 1557: // WhatsApp Business display -> WhatsApp Business API  
+        return 1561;
+      case 2: // Telegram
+        return 2;
+      case 3: // Instagram
+        return 3;
+      case 4: // Messenger
+        return 4;
+      case 6: // TikTok
+        return 6;
+      case 19: // Email
+        return 19;
+      case 1492: // Bukalapak
+        return 1492;
+      case 1502: // Blibli
+        return 1502;
+      case 1503: // Lazada
+        return 1503;
+      case 1504: // Shopee
+        return 1504;
+      case 1505: // Tokopedia
+        return 1505;
+      case 1532: // OLX
+        return 1532;
+      case 1556: // Blibli Seller
+        return 1556;
+      case 1562: // Tokopedia Seller
+        return 1562;
+      case 1569: // Nobox Chat
+        return 1569;
+      default:
+        return displayChannelId; // Use as-is if no mapping found
+    }
   }
 }
 

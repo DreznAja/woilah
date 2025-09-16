@@ -229,14 +229,14 @@ static Future<ApiResponse<List<ChatMessage>>> getMessages({
   // Send message using Inbox API (the proper way to send messages)
   static Future<ApiResponse<String>> sendMessage(Map<String, dynamic> messageData) async {
     try {
-      // Convert the message data to proper Inbox API format
+      // Ensure proper data types for Inbox API
       final inboxData = {
-        'LinkId': int.tryParse(messageData['LinkId']?.toString() ?? messageData['IdLink']?.toString() ?? '0') ?? 0,
-        'ChannelId': int.tryParse(messageData['ChannelId']?.toString() ?? messageData['ChId']?.toString() ?? '1') ?? 1,
+        'LinkId': messageData['LinkId'] is int ? messageData['LinkId'] : int.tryParse(messageData['LinkId']?.toString() ?? '0') ?? 0,
+        'ChannelId': messageData['ChannelId'] is int ? messageData['ChannelId'] : int.tryParse(messageData['ChannelId']?.toString() ?? '1') ?? 1,
         'AccountIds': messageData['AccountIds']?.toString() ?? messageData['IdAccount']?.toString() ?? '1',
-        'BodyType': int.tryParse(messageData['Type']?.toString() ?? '1') ?? 1,
+        'BodyType': messageData['BodyType'] is int ? messageData['BodyType'] : int.tryParse(messageData['BodyType']?.toString() ?? messageData['Type']?.toString() ?? '1') ?? 1,
         'Body': messageData['Msg']?.toString() ?? '',
-        'Attachment': messageData['File']?.toString() ?? '',
+        'Attachment': messageData['Attachment']?.toString() ?? messageData['File']?.toString() ?? '',
       };
 
       // Ensure LinkId is not 0 (which causes the error)
@@ -258,7 +258,11 @@ static Future<ApiResponse<List<ChatMessage>>> getMessages({
       print('Inbox API response: ${response.data}');
 
       if (response.statusCode == 200) {
-        if (response.data['IsError'] == false || response.data['IsError'] == null) {
+        // Handle both boolean and null cases for IsError
+        final isError = response.data['IsError'];
+        final hasError = isError == true; // This handles null and false cases properly
+        
+        if (!hasError) {
           return ApiResponse(
             isError: false,
             data: response.data['Data']?.toString() ?? 'Message sent successfully',
@@ -267,7 +271,7 @@ static Future<ApiResponse<List<ChatMessage>>> getMessages({
         } else {
           return ApiResponse(
             isError: true,
-            error: response.data['Error'] ?? 'Failed to send message',
+            error: response.data['Error'] ?? response.data['ErrorMessage'] ?? 'Failed to send message',
             statusCode: response.statusCode!,
           );
         }

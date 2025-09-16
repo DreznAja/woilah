@@ -367,9 +367,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     switch (channelId) {
       case 1:
-      case 1557:
         color = const Color(0xFF25D366);
         icon = Icons.chat;
+        break;
+      case 1557:
+      case 1561:
+        color = const Color(0xFF25D366);
+        icon = Icons.business;
         break;
       case 2:
         color = const Color(0xFF0088CC);
